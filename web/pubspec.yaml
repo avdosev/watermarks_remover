@@ -4,7 +4,7 @@ description: Web platform for watermarks remover project
 publish_to: 'none'
 
 environment:
-  sdk: '>=2.12.0-259.9.beta <3.0.0'
+  sdk: '>=2.12.0-29.10.beta <3.0.0'
 
 dependencies:
   flutter:
