@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dropzone/flutter_dropzone.dart';
+import 'package:web/widgets/drop_zone.dart';
 import 'package:web/config.dart';
 
 void main() {
@@ -31,8 +31,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  late DropzoneViewController controller;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,25 +40,26 @@ class _MainPageState extends State<MainPage> {
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Expanded(
-            child: Stack(
-              children: [
-                DropzoneView(
-                  operation: DragOperation.copy,
-                  cursor: CursorType.auto,
-                  onCreated: (ctrl) => controller = ctrl,
-                  onLoaded: () => print('Zone loaded'),
-                  onError: (ev) => print('Error: $ev'),
-                  onHover: () => print('Zone hovered'),
-                  onDrop: (ev) => print('Drop: $ev'),
-                  onLeave: () => print('Zone left'),
-                ),
-                Center(child: Text('Drop files here')),
-              ],
+          Container(
+            width: 400,
+            height: 400,
+            child: DropZone(
+              builder: dropZoneBuilder,
             ),
           )
         ],
       ),
+    );
+  }
+
+  Widget dropZoneBuilder(context, state) {
+    final textStyle = TextStyle(fontSize: 25);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.indigo),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text('Drop file there', style: textStyle),
     );
   }
 }
