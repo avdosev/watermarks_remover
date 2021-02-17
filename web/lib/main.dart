@@ -45,6 +45,9 @@ class _MainPageState extends State<MainPage> {
             height: 400,
             child: DropZone(
               builder: dropZoneBuilder,
+              onFile: (file) {
+                print('${file.mime} file ${file.filename}');
+              },
             ),
           )
         ],
