@@ -27,7 +27,8 @@ class _StateDropZone extends State<DropZone> {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      fit: StackFit.expand,
+      fit: StackFit.loose,
+      alignment: Alignment.center,
       children: [
         DropzoneView(
           operation: DragOperation.copy,
