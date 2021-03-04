@@ -76,9 +76,21 @@ class _MainPageState extends State<MainPage> {
       height: 400,
       width: 400,
       decoration: BoxDecoration(
-        color: state == DropState.hover ? Theme.of(context).accentColor.withAlpha(20) : null,
+        // color: state == DropState.hover
+        //     ? Theme.of(context).accentColor.withAlpha(20)
+        //     : null,
+        color: Color.fromRGBO(0xee, 0xeb, 0xf4, 1),
         border: Border.all(color: Theme.of(context).primaryColor, width: 2),
         borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          if (state == DropState.hover)
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3), // changes position of shadow
+            ),
+        ],
       ),
       alignment: Alignment.center,
       child: Text('Drop file there', style: textStyle),
@@ -95,9 +107,19 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget buildFileStatusItem(BuildContext context, ProcessedFile file) {
-    return ListTile(
-      trailing: Icon(Icons.clear),
-      title: Text(file.filename),
-    );
+    final theme = Theme.of(context);
+    return Row(children: [
+      Expanded(
+        child: Text(file.filename, style: theme.textTheme.headline6),
+      ),
+      IconButton(
+        icon: Icon(Icons.preview),
+        onPressed: () {},
+      ),
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {},
+      )
+    ]);
   }
 }
