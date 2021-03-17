@@ -1,7 +1,7 @@
 from albumentations import augmentations
+from albumentations.augmentations.functional import scale
 import numpy as np
 import cv2
-from numpy.lib.shape_base import split
 import config
 import matplotlib.pyplot as plt
 import albumentations as A
@@ -13,7 +13,7 @@ def augment(img):
         for x in range(0, img.shape[0], np.random.randint(2, 10)):
             for y in range(0, img.shape[1], np.random.randint(2, 20)):
                 watermark[x,y] = 255
-    cv2.putText(watermark, gen_word(), (np.random.randint(40, watermark.shape[0]//3), np.random.randint(watermark.shape[0]//4, watermark.shape[1] // 2)), cv2.FONT_HERSHEY_SIMPLEX, 20.0, (255, 255, 255), 40)
+    cv2.putText(watermark, gen_word(), (np.random.randint(40, watermark.shape[0]//3), np.random.randint(watermark.shape[1]//4, watermark.shape[1] // 2)), cv2.FONT_HERSHEY_SIMPLEX, 20.0, (255, 255, 255), 40)
     alpha = np.random.uniform(low=0.3, high=0.6)
     img = cv2.addWeighted(img,alpha,watermark,1.-alpha,0)
 
@@ -39,7 +39,10 @@ def main():
         print(name)
         img_orig = cv2.imread(os.path.join(path, image_name))
 
-        if any([s < 320 for s in img_orig.shape[:-1]]): continue
+        if any([s < 320 for s in img_orig.shape[:-1]]):
+            dsize = np.array(img_orig.shape[:-1])
+            new_size = dsize / np.min(dsize / 320)
+            img_orig = cv2.resize(img_orig, tuple(map(int, new_size)))
         
         augmentations = [
             A.HorizontalFlip(),
