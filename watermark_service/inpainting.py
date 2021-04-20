@@ -1,63 +1,34 @@
-from __future__ import print_function
-import matplotlib.pyplot as plt
-
-import os
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-
 import numpy as np
-from models.resnet import ResNet
-from models.unet import UNet
 from models.skip import skip
 import torch
 import torch.optim
 
-from utils.inpainting_utils import *
+from utils.common_utils import *
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
 dtype = torch.cuda.FloatTensor
 # dtype = torch.FloatTensor
 
-PLOT = True
-imsize = -1
-dim_div_by = 64
-
-img_path = 'data/inpainting/bear_2.jpg'
-mask_path = 'data/inpainting/bear.jpg'
-
-img_pil, img_np = get_image(img_path, imsize)
-img_mask_pil, img_mask_np = get_image(mask_path, imsize)
-
-img_mask_pil = crop_image(img_mask_pil, dim_div_by)
-img_pil      = crop_image(img_pil,      dim_div_by)
-
-img_np      = pil_to_np(img_pil)
-img_mask_np = pil_to_np(img_mask_pil)
-
-img_mask_var = np_to_torch(img_mask_np).type(dtype)
-
-plot_image_grid([img_np, img_mask_np, img_mask_np*img_np], 3,11)
-
 def remove_watermark(img_np, img_mask_np):
     pad = 'reflection' # 'zero'
     OPT_OVER = 'net'
     OPTIMIZER = 'adam'
 
-    INPUT = 'meshgrid'
-    input_depth = 2
+    input_depth = 3
     LR = 0.01 
     num_iter = 5001
     param_noise = False
 
     net = skip(input_depth, img_np.shape[0], 
-            num_channels_down = [128] * 5,
-            num_channels_up   = [128] * 5,
-            num_channels_skip = [0] * 5,  
-            upsample_mode='nearest', filter_skip_size=1, filter_size_up=3, filter_size_down=3,
-            need_sigmoid=True, need_bias=True, pad=pad, act_fun='LeakyReLU').type(dtype)
+           num_channels_down = [16,32,64,128,128],
+           num_channels_up   = [16,32,64,128,128],
+           num_channels_skip = [0]*5,  
+           upsample_mode='nearest', filter_skip_size=1, filter_size_up=3, filter_size_down=3,
+           need_sigmoid=True, need_bias=True, pad=pad, act_fun='LeakyReLU').type(dtype)
 
     net = net.type(dtype)
-    net_input = get_noise(input_depth, INPUT, img_np.shape[1:]).type(dtype)
+    net_input = np_to_torch(img_np).type(dtype)
 
     # Compute number of parameters
     s  = sum(np.prod(list(p.size())) for p in net.parameters())
@@ -92,7 +63,6 @@ def remove_watermark(img_np, img_mask_np):
         return total_loss
 
     net_input_saved = net_input.detach().clone()
-    noise = net_input.detach().clone()
 
     p = get_params(OPT_OVER, net, net_input)
     optimize(OPTIMIZER, p, closure, LR, num_iter)
