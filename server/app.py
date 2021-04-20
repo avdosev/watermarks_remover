@@ -3,10 +3,20 @@ import os
 from environs import Env
 from databases import Database
 from settings import Settings
+import tables
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 
-def setup_database():
-    global app
+def setup_database(app):
     app.db = Database(app.config.DB_URL)
+
+    engine = create_engine(app.config.DB_URL)
+    if not database_exists(engine.url):
+        create_database(engine.url)
+
+    print(database_exists(engine.url))
+
+    tables.metadata.create_all(engine)
 
     @app.listener('after_server_start')
     async def connect_to_db(*args, **kwargs):
@@ -16,17 +26,18 @@ def setup_database():
     async def disconnect_from_db(*args, **kwargs):
         await app.db.disconnect()
 
-def make_app() -> Sanic:
+def make_app(name) -> Sanic:
     env = Env()
     env.read_env()
 
-    app = Sanic(__name__)
+    app = Sanic(name)
     
     app.update_config(Settings())
+    setup_database(app)
     app.static('/', app.config.FRONTEND_DIR)
     return app
 
-app = make_app()
+app = make_app(__name__)
 
 @app.route('/', methods=["GET"])
 def main(request):
@@ -43,8 +54,30 @@ def main(request):
 #     return response.json({'status': 'success', 'file_id': file_id})
 
 @app.route('/api/user', methods=['POST'])
-def create_user(request):
+async def create_user(request):
+    query = tables.users.insert(request.json)
+    res = await app.db.execute(query)
+    print(res)
+    return response.text(str(res))
+
+
+@app.route('/api/image', methods=['POST'])
+def add_image(request):
     pass
+
+@app.route('/api/image', methods=['DELETE'])
+def remove_image(request):
+    pass
+
+@app.route('/api/image', methods=['GET'])
+def get_image(request):
+    pass
+
+@app.route('/api/image_info', methods=['GET'])
+def get_image_info(request):
+    pass
+
+
 
 
 if __name__ == "__main__":
