@@ -2,6 +2,7 @@ from sanic import Sanic, response
 import os
 from environs import Env
 from databases import Database
+from sqlalchemy.engine import result
 from settings import Settings
 import tables
 from sqlalchemy import create_engine
@@ -45,16 +46,6 @@ app = make_app(__name__)
 @app.route('/', methods=["GET"])
 def main(request):
     return response.file(os.path.join(app.config.FRONTEND_DIR, 'index.html'))
-
-# @app.route('/', methods=['POST'])
-# def upload_image(request):
-#     # check if the post request has the file part
-#     if 'file' not in request.files:
-#         return response.json({'status': 'failed'}, status=400)
-#     file = request.files['file']
-#     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#     file_id = None # todo
-#     return response.json({'status': 'success', 'file_id': file_id})
 
 @app.route('/api/user', methods=['POST'])
 async def create_user(request):
@@ -105,21 +96,78 @@ async def add_image(request, user_id):
 
     return response.json({'status': 'success', 'name': image_file.name, 'id': file_id})
 
+@app.route('/api/image/<user_id>/<file_id>', methods=['DELETE'])
+async def remove_image(request, user_id, file_id):
+    query = tables.images.delete().where(tables.images.c.file_id == file_id and tables.images.c.user_id == user_id)
+    await app.db.execute(query)
+    return response.empty(status=202)
 
-@app.route('/api/image/<user_id>', methods=['DELETE'])
-def remove_image(request):
-    pass
+@app.route('/api/image/<user_id>/<file_id>', methods=['GET'])
+async def get_image(request, user_id, file_id):
+    query = tables.images.select().where(tables.images.c.user_id == user_id and tables.images.c.id == file_id)
+    res = await app.db.fetch_all(query)
+    if len(res) == 0:
+        return response.empty(status=204)
+    
+    res = res[0]
+    st = res.result_state
+    if st is not None and st == 'READY':
+        return response.file(res.result_path, filename=res.image_name)
+    
+    return response.empty(status=206)
 
-@app.route('/api/image/<user_id>', methods=['GET'])
-def get_image(request, id):
-    pass
+@app.route('/api/images/info/<user_id>', methods=['GET'])
+async def get_image_info(request, user_id):
+    query = tables.images.select().where(tables.images.c.user_id == user_id)
+    res = await app.db.fetch_all(query)
+    res = [{
+        'id': item.id,
+        'image_name': item.image_name,
+        'result_state': item.result_state,
+    } for item in res]
+    return response.json(res)
 
-@app.route('/api/image_info/<user_id>', methods=['GET'])
-def get_image_info(request):
-    pass
+@app.route('/api/worker/image', methods=['GET'])
+async def get_work(request):
+    query = tables.images.select().where(tables.images.c.result_state == None)
+    res = await app.db.fetch_all(query)
+    if len(res) == 0:
+        return response.json({'file_id': None}, status=204)
+    
+    res = res[0]
 
+    file_id = res.id
 
+    query = tables.images.update().where(tables.images.c.id == file_id).values(result_state='IN_PROGRESS')
+    await app.db.execute(query)
 
+    return response.json({'file_id': file_id})
+
+@app.route('/api/worker/image/data', methods=['GET'])
+async def get_image_or_mask(request):
+    file_id = request.args['file_id'][0]
+    type = request.args['file_id'][0]
+    query = tables.images.select().where(tables.images.c.id == file_id)
+    res = await app.db.fetch_all(query)
+    res = res[0]
+
+    if type == 'mask':
+        return response.file(res.mask_path)
+    else:
+        return response.file(res.image_path)
+
+@app.route('/api/worker/image/<file_id>', methods=['GET'])
+async def return_work(request, file_id):
+    image_file = request.files['image'][0]
+    image_name = os.path.join('local_files', str(uuid.uuid4()))
+
+    async with aiofiles.open(image_name, 'wb') as f:
+        await f.write(image_file.body)
+    
+    query = tables.images.update().where(tables.images.c.id == file_id).values(result_state='READY', result_path=image_name)
+    await app.db.execute(query)
+
+    return response.json({'file_id': file_id})
 
 if __name__ == "__main__":
     print(app.config)
