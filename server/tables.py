@@ -13,8 +13,9 @@ users = sqlalchemy.Table(
 images = sqlalchemy.Table(
     'images',
     metadata,
-    sqlalchemy.Column('id', sqlalchemy.String(), primary_key=True),
+    sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True, autoincrement=True),
     sqlalchemy.Column('user_id', sqlalchemy.Integer()),
+    sqlalchemy.Column('image_name', sqlalchemy.String()),
     sqlalchemy.Column('image_path', sqlalchemy.String()),
     sqlalchemy.Column('mask_path', sqlalchemy.String()),
     sqlalchemy.Column('result_path', sqlalchemy.String()),
