@@ -1,34 +1,14 @@
 from sanic import Sanic, response
 import os
 from environs import Env
-from databases import Database
-from sqlalchemy.engine import result
 from settings import Settings
 import tables
-from sqlalchemy import create_engine
-from sqlalchemy_utils import database_exists, create_database
+
 import uuid
 import aiofiles
 import asyncio
 
-def setup_database(app):
-    app.db = Database(app.config.DB_URL)
-
-    engine = create_engine(app.config.DB_URL)
-    if not database_exists(engine.url):
-        create_database(engine.url)
-
-    print(database_exists(engine.url))
-
-    tables.metadata.create_all(engine)
-
-    @app.listener('after_server_start')
-    async def connect_to_db(*args, **kwargs):
-        await app.db.connect()
-
-    @app.listener('after_server_stop')
-    async def disconnect_from_db(*args, **kwargs):
-        await app.db.disconnect()
+from database import setup_database
 
 def make_app(name) -> Sanic:
     env = Env()
