@@ -1,4 +1,6 @@
 from sanic import Sanic, response
+from sanic_openapi import swagger_blueprint
+
 import os
 from environs import Env
 from settings import Settings
@@ -14,9 +16,12 @@ def make_app(name) -> Sanic:
     env = Env()
     env.read_env()
 
-    app = Sanic(name)
-    
+    app = Sanic(name)    
     app.update_config(Settings())
+
+    if app.config.DEBUG:
+        app.blueprint(swagger_blueprint)
+    
     setup_database(app)
     app.static('/', app.config.FRONTEND_DIR)
     return app
@@ -136,7 +141,7 @@ async def get_image_or_mask(request):
     else:
         return response.file(res.image_path)
 
-@app.route('/api/worker/image/<file_id>', methods=['GET'])
+@app.route('/api/worker/image/<file_id>', methods=['POST'])
 async def return_work(request, file_id):
     image_file = request.files['image'][0]
     image_name = os.path.join('local_files', str(uuid.uuid4()))
