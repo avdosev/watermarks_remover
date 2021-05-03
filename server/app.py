@@ -131,15 +131,15 @@ async def get_work(request):
 @app.route('/api/worker/image/data', methods=['GET'])
 async def get_image_or_mask(request):
     file_id = request.args['file_id'][0]
-    type = request.args['file_id'][0]
+    type = request.args['type'][0]
     query = tables.images.select().where(tables.images.c.id == file_id)
     res = await app.db.fetch_all(query)
     res = res[0]
 
     if type == 'mask':
-        return response.file(res.mask_path)
+        return await response.file(res.mask_path)
     else:
-        return response.file(res.image_path)
+        return await response.file(res.image_path)
 
 @app.route('/api/worker/image/<file_id>', methods=['POST'])
 async def return_work(request, file_id):
