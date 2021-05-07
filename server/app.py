@@ -55,7 +55,6 @@ async def access_user(request):
 
 @app.route('/api/image/<user_id:int>', methods=['POST'])
 async def add_image(request, user_id):
-    user_id = 1
     if 'image' not in request.files or 'mask' not in request.files:
         return response.json({'status': 'failed'}, status=400)
     image_file = request.files['image'][0]
