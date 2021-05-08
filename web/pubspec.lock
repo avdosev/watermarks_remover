@@ -216,13 +216,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.10"
-  flutter_mobx:
-    dependency: "direct main"
-    description:
-      name: flutter_mobx
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.0+2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -317,20 +310,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  mobx:
+  nested:
     dependency: transitive
     description:
-      name: mobx
+      name: nested
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.1+4"
-  mobx_codegen:
-    dependency: "direct dev"
-    description:
-      name: mobx_codegen
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.2"
+    version: "1.0.0"
   node_interop:
     dependency: transitive
     description:
@@ -380,6 +366,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.0"
+  provider:
+    dependency: "direct main"
+    description:
+      name: provider
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.3.3"
   pub_semver:
     dependency: transitive
     description:
@@ -413,13 +406,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
-  source_gen:
-    dependency: transitive
-    description:
-      name: source_gen
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.9.10+2"
   source_span:
     dependency: transitive
     description:
@@ -513,4 +499,4 @@ packages:
     version: "2.2.1"
 sdks:
   dart: ">=2.12.0-29.10.beta <3.0.0"
-  flutter: ">=1.10.0"
+  flutter: ">=1.16.0 <2.0.0"

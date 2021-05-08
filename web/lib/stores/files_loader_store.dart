@@ -1,11 +1,6 @@
-// ignore: import_of_legacy_library_into_null_safe
-import 'package:mobx/mobx.dart';
+import 'package:flutter/material.dart';
 import 'package:web/memory_file.dart';
 import 'package:crypto/crypto.dart';
-
-part 'files_loader_store.g.dart';
-
-class FileUploader = FileUploaderBase with _$FileUploader;
 
 // States
 
@@ -23,12 +18,10 @@ class ProcessedFile {
   });
 }
 
-abstract class FileUploaderBase with Store {
-  @observable
-  ObservableList<ProcessedFile> files = ObservableList<ProcessedFile>();
+class FileUploader extends ChangeNotifier {
+  List<ProcessedFile> files = <ProcessedFile>[];
   final keys = <String>{};
 
-  @action
   void addFile(MemoryFile file) {
     final uniqueKey = md5.convert(file.data).toString();
     if (keys.contains(uniqueKey)) {
@@ -44,5 +37,7 @@ abstract class FileUploaderBase with Store {
       filename: file.filename,
       state: FileProcess.processing,
     ));
+
+    notifyListeners();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:provider/provider.dart';
 import 'package:web/stores/files_loader_store.dart';
 import 'package:web/widgets/drop_zone.dart';
 import 'package:web/config.dart';
@@ -41,11 +42,14 @@ class _MainPageState extends State<MainPage> {
       appBar: AppBar(
         title: Text(config.homeTitle),
       ),
-      body: Observer(builder: buildBody),
+      body: ChangeNotifierProvider(
+        create: (context) => filesStore,
+        builder: buildBody,
+      ),
     );
   }
 
-  Widget buildBody(BuildContext context) {
+  Widget buildBody(BuildContext context, Widget child) {
     final hasFiles = filesStore.files.isNotEmpty;
     if (hasFiles) {
       return Row(
