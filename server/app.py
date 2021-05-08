@@ -37,7 +37,7 @@ async def create_user(request):
     query = tables.users.insert(request.json)
     res = await app.db.execute(query)
     print(res)
-    return response.json({'user_id': str(res)})
+    return response.json({'user_id': str(res), 'status': 'success'})
 
 @app.route('/api/user', methods=['GET'])
 async def access_user(request):

@@ -1,3 +1,4 @@
+import 'package:either_dart/either.dart';
 import 'package:flutter/material.dart';
 import 'package:web/memory_file.dart';
 import 'package:crypto/crypto.dart';
@@ -16,6 +17,12 @@ class ProcessedFile {
     required this.filename,
     required this.state,
   });
+}
+
+class MessageError {
+  Object message;
+
+  MessageError(this.message);
 }
 
 class FileUploader extends ChangeNotifier {
@@ -39,5 +46,18 @@ class FileUploader extends ChangeNotifier {
     ));
 
     notifyListeners();
+  }
+
+  void removeFile(String key) {
+    notifyListeners();
+  }
+
+  void downloadFile() {
+    notifyListeners();
+  }
+
+  Future<Either<MessageError, MemoryFile>> getFile(String key) async {
+    notifyListeners();
+    return Left(MessageError('Not implemented'));
   }
 }

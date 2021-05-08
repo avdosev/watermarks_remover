@@ -1,129 +1,41 @@
 import 'package:flutter/material.dart';
-// ignore: import_of_legacy_library_into_null_safe
+import 'package:web/stores/auth_store.dart';
+import './pages/main_page.dart';
+import './pages/auth_page.dart';
 import 'package:provider/provider.dart';
-import 'package:web/stores/files_loader_store.dart';
-import 'package:web/widgets/drop_zone.dart';
-import 'package:web/config.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(Root());
 }
 
-class MyApp extends StatelessWidget {
+class Root extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+    return MultiProvider(
+      providers: [
+        Provider<AuthStore>(create: (_) => AuthStore()),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.deepPurple,
+        ),
+        home: Home(),
       ),
-      initialRoute: "home",
-      routes: {
-        "home": (context) => MainPage(),
-      },
     );
   }
 }
 
-class MainPage extends StatefulWidget {
-  MainPage({Key? key}) : super(key: key);
-
-  @override
-  _MainPageState createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  final filesStore = FileUploader();
-
+class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(config.homeTitle),
-      ),
-      body: ChangeNotifierProvider(
-        create: (context) => filesStore,
-        builder: buildBody,
-      ),
-    );
-  }
-
-  Widget buildBody(BuildContext context, Widget child) {
-    final hasFiles = filesStore.files.isNotEmpty;
-    if (hasFiles) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(child: Center(child: buildDropZone())),
-          Container(width: 400, child: buildFiles(context)),
-        ],
-      );
+    final authStore = context.watch<AuthStore>();
+    if (authStore.token == null) {
+      return AuthPage();
     } else {
-      return Center(child: buildDropZone());
+      print('Token: ${authStore.token}');
+      return MainPage();
     }
-  }
-
-  Widget buildDropZone() {
-    return DropZone(
-      builder: dropZoneBuilder,
-      onFile: (file) {
-        print('${file.mime} file ${file.filename}');
-        filesStore.addFile(file);
-      },
-    );
-  }
-
-  Widget dropZoneBuilder(context, state) {
-    final textStyle = TextStyle(fontSize: 25);
-    return Container(
-      height: 400,
-      width: 400,
-      decoration: BoxDecoration(
-        // color: state == DropState.hover
-        //     ? Theme.of(context).accentColor.withAlpha(20)
-        //     : null,
-        color: Color.fromRGBO(0xee, 0xeb, 0xf4, 1),
-        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          if (state == DropState.hover)
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 5,
-              blurRadius: 7,
-              offset: Offset(0, 3), // changes position of shadow
-            ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text('Drop file there', style: textStyle),
-    );
-  }
-
-  Widget buildFiles(BuildContext context) {
-    final files = filesStore.files;
-    return ListView.builder(
-      itemBuilder: (context, index) =>
-          buildFileStatusItem(context, files[index]),
-      itemCount: files.length,
-    );
-  }
-
-  Widget buildFileStatusItem(BuildContext context, ProcessedFile file) {
-    final theme = Theme.of(context);
-    return Row(children: [
-      Expanded(
-        child: Text(file.filename, style: theme.textTheme.headline6),
-      ),
-      IconButton(
-        icon: Icon(Icons.preview),
-        onPressed: () {},
-      ),
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {},
-      )
-    ]);
   }
 }
