@@ -39,7 +39,7 @@ class Home extends StatelessWidget {
       } else {
         print('Token: ${authStore.token}');
         return ChangeNotifierProvider<FileUploader>(
-            create: (_) => FileUploader(authToken),
+            create: (_) => FileUploader(authToken)..startUpdating(),
             builder: (_, __) => MainPage());
       }
     });

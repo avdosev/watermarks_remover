@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web/pages/preview_image.dart';
+import 'package:web/utils/file_download.dart';
 import 'package:web/widgets/watermark_form.dart';
 import 'package:web/stores/auth_store.dart';
 import 'package:web/stores/files_loader_store.dart';
@@ -55,7 +56,6 @@ class FilesView extends StatelessWidget {
       BuildContext context, ProcessedFile file, FileUploader filesStore) {
     final theme = Theme.of(context);
     final fileReady = file.state == FileProcess.done;
-    final authToken = context.watch<AuthStore>().token;
     return Row(children: [
       Expanded(
         child: Text(file.filename, style: theme.textTheme.headline6),
@@ -64,14 +64,14 @@ class FilesView extends StatelessWidget {
           icon: Icon(Icons.file_download),
           onPressed: fileReady
               ? () {
-                  // todo download
+                  downloadFile(filesStore.getFileUrl(file.id), file.filename);
                 }
               : null),
       IconButton(
         icon: Icon(Icons.preview),
         onPressed: fileReady
             ? () {
-                final url = '/api/image/$authToken/${file.id}';
+                final url = filesStore.getFileUrl(file.id).toString();
                 final imageProvider = NetworkImage(url);
                 showDialog(
                   context: context,
