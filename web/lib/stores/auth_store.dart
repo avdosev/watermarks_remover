@@ -10,10 +10,13 @@ class AuthStore extends ChangeNotifier {
   AuthStore();
 
   Future<void> auth(String email, String password) async {
+    print('try auth');
     try {
       requestStatus = LoadingStatus.inProgress;
-      final response = await http.get(
-          Uri.http('/', 'api/user', {'email': email, 'password': password}));
+      notifyListeners();
+      final response = await http.get(Uri.base.replace(
+          path: 'api/user',
+          queryParameters: {'email': email, 'password': password}));
       final res = json.decode(response.body);
       if (res['status'] == 'success') {
         token = res['user_id'];
@@ -22,16 +25,20 @@ class AuthStore extends ChangeNotifier {
         requestStatus = LoadingStatus.corrupted;
       }
     } catch (err) {
+      print(err);
       requestStatus = LoadingStatus.corrupted;
     }
+    print('end auth with token: $token');
     notifyListeners();
   }
 
   Future<void> registration(String email, String password) async {
+    print('try registration');
     try {
       requestStatus = LoadingStatus.inProgress;
+      notifyListeners();
       final response = await http.post(
-        Uri.http('/', 'api/user'),
+        Uri.base.replace(path: 'api/user'),
         body: json.encode({
           'email': email,
           'password': password,
@@ -45,8 +52,10 @@ class AuthStore extends ChangeNotifier {
         requestStatus = LoadingStatus.corrupted;
       }
     } catch (err) {
+      print(err);
       requestStatus = LoadingStatus.corrupted;
     }
+    print('end registration with token: $token');
     notifyListeners();
   }
 }

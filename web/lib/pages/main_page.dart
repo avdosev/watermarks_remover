@@ -4,46 +4,44 @@ import 'package:web/stores/files_loader_store.dart';
 import 'package:web/widgets/drop_zone.dart';
 import 'package:web/config.dart';
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   MainPage({Key? key}) : super(key: key);
 
-  @override
-  _MainPageState createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  final filesStore = FileUploader();
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(config.homeTitle),
       ),
-      body: ChangeNotifierProvider(
-        create: (context) => filesStore,
-        child: Consumer<FileUploader>(
-            builder: (context, __, ___) => buildBody(context)),
-      ),
+      body: buildBody(context),
     );
   }
 
   Widget buildBody(BuildContext context) {
-    final hasFiles = filesStore.files.isNotEmpty;
-    if (hasFiles) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(child: Center(child: buildDropZone())),
-          Container(width: 400, child: buildFiles(context)),
-        ],
-      );
-    } else {
-      return Center(child: buildDropZone());
-    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Expanded(
+            child: Center(
+                child: WatermarkLoaderForm(key: ValueKey('input_form')))),
+        Container(width: 400, child: FilesView()),
+      ],
+    );
   }
+}
 
-  Widget buildDropZone() {
+class WatermarkLoaderForm extends StatefulWidget {
+  final Key? key;
+
+  WatermarkLoaderForm({this.key}) : super(key: key);
+
+  @override
+  _WatermarkLoaderFormState createState() => _WatermarkLoaderFormState();
+}
+
+class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
+  @override
+  Widget build(BuildContext context) {
+    final filesStore = context.watch<FileUploader>();
     return DropZone(
       builder: dropZoneBuilder,
       onFile: (file) {
@@ -53,7 +51,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget dropZoneBuilder(context, state) {
+  Widget dropZoneBuilder(BuildContext context, DropState state) {
     final textStyle = TextStyle(fontSize: 25);
     return Container(
       height: 400,
@@ -79,17 +77,24 @@ class _MainPageState extends State<MainPage> {
       child: Text('Drop file there', style: textStyle),
     );
   }
+}
 
-  Widget buildFiles(BuildContext context) {
-    final files = filesStore.files;
-    return ListView.builder(
-      itemBuilder: (context, index) =>
-          buildFileStatusItem(context, files[index]),
-      itemCount: files.length,
+class FilesView extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Consumer<FileUploader>(
+      builder: (context, filesStore, __) {
+        final files = filesStore.files;
+        return ListView.builder(
+          itemBuilder: (context, index) =>
+              buildFileStatusItem(context, files[index], filesStore),
+          itemCount: files.length,
+        );
+      },
     );
   }
 
-  Widget buildFileStatusItem(BuildContext context, ProcessedFile file) {
+  Widget buildFileStatusItem(
+      BuildContext context, ProcessedFile file, FileUploader filesStore) {
     final theme = Theme.of(context);
     return Row(children: [
       Expanded(

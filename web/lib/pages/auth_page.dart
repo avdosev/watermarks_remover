@@ -18,56 +18,68 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: 800,
-        alignment: Alignment.center,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              TextFormField(
-                controller: emailController,
-                decoration: const InputDecoration(
-                  hintText: 'Введите email',
-                ),
-                validator: emailValidator,
-              ),
-              TextFormField(
-                controller: passwordController,
-                decoration: const InputDecoration(
-                  hintText: 'Введите пароль',
-                ),
-                validator: passwordValidator,
-              ),
-              Consumer<AuthStore>(
-                builder: (context, store, _) {
+      body: Center(
+        child: Container(
+          width: 600,
+          height: 600,
+          alignment: Alignment.center,
+          child: Form(
+            key: _formKey,
+            child: Consumer<AuthStore>(
+              builder: (context, store, _) => Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  TextFormField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Введите email',
+                    ),
+                    validator: emailValidator,
+                  ),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Введите пароль',
+                    ),
+                    validator: passwordValidator,
+                  ),
                   if (store.requestStatus == null ||
-                      store.requestStatus == LoadingStatus.corrupted) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      store.requestStatus == LoadingStatus.corrupted)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              minimumSize: Size(200, 50)),
                           onPressed: () {
-                            if (_formKey.currentState!.validate()) {}
+                            if (_formKey.currentState!.validate()) {
+                              store.auth(emailController.text,
+                                  passwordController.text);
+                            }
                           },
                           child: const Text('Войти'),
                         ),
-                        ElevatedButton(
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              minimumSize: Size(200, 50)),
                           onPressed: () {
-                            if (_formKey.currentState!.validate()) {}
+                            if (_formKey.currentState!.validate()) {
+                              store.registration(emailController.text,
+                                  passwordController.text);
+                            }
                           },
                           child: const Text('Регистрация'),
                         ),
                       ],
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
+                    )
+                  else
+                    const CircularProgressIndicator()
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
