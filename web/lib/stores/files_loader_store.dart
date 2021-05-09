@@ -34,21 +34,21 @@ class FileUploader extends ChangeNotifier {
     this.token = token;
   }
 
-  void addFile(MemoryFile file) {
-    final uniqueKey = md5.convert(file.data).toString();
-    if (keys.contains(uniqueKey)) {
-      print('file ${file.filename} contains');
-      return;
-    }
+  void addFile(MemoryFile image, MemoryFile mask) {
+    // final uniqueKey = md5.convert(file.data).toString();
+    // if (keys.contains(uniqueKey)) {
+    //   print('file ${file.filename} contains');
+    //   return;
+    // }
 
-    // todo: process file to server
-    keys.add(uniqueKey);
-    print(uniqueKey);
-    files.add(ProcessedFile(
-      id: uniqueKey,
-      filename: file.filename,
-      state: FileProcess.processing,
-    ));
+    // // todo: process file to server
+    // keys.add(uniqueKey);
+    // print(uniqueKey);
+    // files.add(ProcessedFile(
+    //   id: uniqueKey,
+    //   filename: file.filename,
+    //   state: FileProcess.processing,
+    // ));
 
     notifyListeners();
   }

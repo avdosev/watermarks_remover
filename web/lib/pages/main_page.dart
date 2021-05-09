@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:web/pages/preview_image.dart';
+import 'package:web/widgets/watermark_form.dart';
+import 'package:web/stores/auth_store.dart';
 import 'package:web/stores/files_loader_store.dart';
-import 'package:web/widgets/drop_zone.dart';
 import 'package:web/config.dart';
 
 class MainPage extends StatelessWidget {
@@ -17,64 +19,20 @@ class MainPage extends StatelessWidget {
   }
 
   Widget buildBody(BuildContext context) {
+    final filesStore = context.watch<FileUploader>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Expanded(
-            child: Center(
-                child: WatermarkLoaderForm(key: ValueKey('input_form')))),
         Container(width: 400, child: FilesView()),
-      ],
-    );
-  }
-}
-
-class WatermarkLoaderForm extends StatefulWidget {
-  final Key? key;
-
-  WatermarkLoaderForm({this.key}) : super(key: key);
-
-  @override
-  _WatermarkLoaderFormState createState() => _WatermarkLoaderFormState();
-}
-
-class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
-  @override
-  Widget build(BuildContext context) {
-    final filesStore = context.watch<FileUploader>();
-    return DropZone(
-      builder: dropZoneBuilder,
-      onFile: (file) {
-        print('${file.mime} file ${file.filename}');
-        filesStore.addFile(file);
-      },
-    );
-  }
-
-  Widget dropZoneBuilder(BuildContext context, DropState state) {
-    final textStyle = TextStyle(fontSize: 25);
-    return Container(
-      height: 400,
-      width: 400,
-      decoration: BoxDecoration(
-        // color: state == DropState.hover
-        //     ? Theme.of(context).accentColor.withAlpha(20)
-        //     : null,
-        color: Color.fromRGBO(0xee, 0xeb, 0xf4, 1),
-        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          if (state == DropState.hover)
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 5,
-              blurRadius: 7,
-              offset: Offset(0, 3), // changes position of shadow
+        Expanded(
+          child: Center(
+            child: WatermarkLoaderForm(
+              key: ValueKey('input_form'),
+              onSubmit: (image, mask) => filesStore.addFile(image, mask),
             ),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Text('Drop file there', style: textStyle),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -96,13 +54,32 @@ class FilesView extends StatelessWidget {
   Widget buildFileStatusItem(
       BuildContext context, ProcessedFile file, FileUploader filesStore) {
     final theme = Theme.of(context);
+    final fileReady = file.state == FileProcess.done;
+    final authToken = context.watch<AuthStore>().token;
     return Row(children: [
       Expanded(
         child: Text(file.filename, style: theme.textTheme.headline6),
       ),
       IconButton(
+          icon: Icon(Icons.file_download),
+          onPressed: fileReady
+              ? () {
+                  // todo download
+                }
+              : null),
+      IconButton(
         icon: Icon(Icons.preview),
-        onPressed: () {},
+        onPressed: fileReady
+            ? () {
+                final url = '/api/image/$authToken/${file.id}';
+                final imageProvider = NetworkImage(url);
+                showDialog(
+                  context: context,
+                  builder: (context) =>
+                      ImagePreview(imageProvider: imageProvider),
+                );
+              }
+            : null,
       ),
       IconButton(
         icon: Icon(Icons.clear),
