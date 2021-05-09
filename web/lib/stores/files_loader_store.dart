@@ -26,13 +26,11 @@ class MessageError {
 }
 
 class FileUploader extends ChangeNotifier {
+  String token;
   List<ProcessedFile> files = <ProcessedFile>[];
   final keys = <String>{};
-  String? token;
 
-  void registryToken(String token) {
-    this.token = token;
-  }
+  FileUploader(this.token);
 
   void addFile(MemoryFile image, MemoryFile mask) {
     // final uniqueKey = md5.convert(file.data).toString();

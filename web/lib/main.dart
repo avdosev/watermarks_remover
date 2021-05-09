@@ -16,7 +16,6 @@ class Root extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthStore>(create: (_) => AuthStore()),
-        ChangeNotifierProvider<FileUploader>(create: (_) => FileUploader()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -34,11 +33,14 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthStore>(builder: (_, authStore, __) {
       print('Rebuild home');
-      if (authStore.token == null) {
+      final authToken = authStore.token;
+      if (authToken == null) {
         return AuthPage(key: ValueKey('auth_page'));
       } else {
         print('Token: ${authStore.token}');
-        return MainPage();
+        return ChangeNotifierProvider<FileUploader>(
+            create: (_) => FileUploader(authToken),
+            builder: (_, __) => MainPage());
       }
     });
   }
