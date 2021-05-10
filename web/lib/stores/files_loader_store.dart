@@ -18,6 +18,9 @@ class ProcessedFile {
     required this.filename,
     required this.state,
   });
+
+  @override
+  String toString() => '{id: $id, filename: $filename, state: $state}';
 }
 
 class MessageError {
@@ -35,6 +38,7 @@ class FileUploader extends ChangeNotifier {
 
   void addFile(MemoryFile image, MemoryFile mask) async {
     final uri = Uri.base.replace(path: '/api/image/$token');
+    print('Send watermark');
     http.MultipartRequest request = new http.MultipartRequest('POST', uri)
       ..files.add(http.MultipartFile.fromBytes('image', image.data,
           filename: image.filename))
@@ -63,6 +67,8 @@ class FileUploader extends ChangeNotifier {
       try {
         final status = await getStatus();
         files = status;
+        final filesLog = files.join(',\n');
+        print('New files: [$filesLog]');
         notifyListeners();
       } catch (err) {
         print('Files status error: $err');
@@ -83,7 +89,7 @@ class FileUploader extends ChangeNotifier {
     final files = <ProcessedFile>[];
     for (final item in res) {
       late FileProcess status;
-      switch (item['status']) {
+      switch (item['result_state']) {
         case 'IN_PROGRESS':
           status = FileProcess.processing;
           break;

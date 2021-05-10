@@ -23,7 +23,7 @@ def make_app(name) -> Sanic:
         app.blueprint(swagger_blueprint)
     
     setup_database(app)
-    app.static('/', app.config.FRONTEND_DIR)
+    app.static('/static', app.config.FRONTEND_DIR)
     return app
 
 app = make_app(__name__)
@@ -82,7 +82,7 @@ async def add_image(request, user_id):
 
 @app.route('/api/image/<user_id>/<file_id>', methods=['DELETE'])
 async def remove_image(request, user_id, file_id):
-    query = tables.images.delete().where(tables.images.c.file_id == file_id and tables.images.c.user_id == user_id)
+    query = tables.images.delete().where(tables.images.c.id == file_id and tables.images.c.user_id == user_id)
     await app.db.execute(query)
     return response.empty(status=202)
 
@@ -96,7 +96,7 @@ async def get_image(request, user_id, file_id):
     res = res[0]
     st = res.result_state
     if st is not None and st == 'READY':
-        return response.file(res.result_path, filename=res.image_name)
+        return await response.file(res.result_path, filename=res.image_name)
     
     return response.empty(status=206)
 

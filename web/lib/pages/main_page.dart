@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:web/pages/preview_image.dart';
 import 'package:web/utils/file_download.dart';
 import 'package:web/widgets/watermark_form.dart';
-import 'package:web/stores/auth_store.dart';
 import 'package:web/stores/files_loader_store.dart';
 import 'package:web/config.dart';
 
@@ -24,7 +23,11 @@ class MainPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Container(width: 400, child: FilesView()),
+        Container(
+          width: 400,
+          padding: EdgeInsets.only(left: 10),
+          child: FilesView(),
+        ),
         Expanded(
           child: Center(
             child: WatermarkLoaderForm(
@@ -56,7 +59,25 @@ class FilesView extends StatelessWidget {
       BuildContext context, ProcessedFile file, FileUploader filesStore) {
     final theme = Theme.of(context);
     final fileReady = file.state == FileProcess.done;
+    late Icon fileStatus;
+    if (file.state == FileProcess.done) {
+      fileStatus = Icon(
+        Icons.done,
+        semanticLabel: 'Завершено',
+      );
+    } else if (file.state == FileProcess.processing) {
+      fileStatus = Icon(
+        Icons.cached,
+        semanticLabel: 'Обрабатывается',
+      );
+    } else {
+      fileStatus = Icon(
+        Icons.query_builder,
+        semanticLabel: 'Ожидание',
+      );
+    }
     return Row(children: [
+      fileStatus,
       Expanded(
         child: Text(file.filename, style: theme.textTheme.headline6),
       ),
@@ -76,7 +97,7 @@ class FilesView extends StatelessWidget {
                 showDialog(
                   context: context,
                   builder: (context) =>
-                      ImagePreview(imageProvider: imageProvider),
+                      Dialog(child: ImagePreview(imageProvider: imageProvider)),
                 );
               }
             : null,

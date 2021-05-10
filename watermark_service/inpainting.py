@@ -17,7 +17,7 @@ def remove_watermark(img_np, img_mask_np):
 
     input_depth = 3
     LR = 0.01 
-    num_iter = 51
+    num_iter = 2500
     param_noise = False
 
     net = skip(input_depth, img_np.shape[0], 

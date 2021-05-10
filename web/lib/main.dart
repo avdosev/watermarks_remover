@@ -18,7 +18,7 @@ class Root extends StatelessWidget {
         ChangeNotifierProvider<AuthStore>(create: (_) => AuthStore()),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Watermark remover',
         theme: ThemeData(
           primarySwatch: Colors.deepPurple,
         ),

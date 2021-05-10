@@ -20,18 +20,6 @@ class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      DropzoneView(
-        onCreated: (ctrl) => controller = ctrl,
-        onLoaded: () => print('Zone loaded'),
-        onError: (ev) => print('Error: $ev'),
-        onDrop: (ev) async {},
-      ),
-      buildForm(context),
-    ]);
-  }
-
-  Widget buildForm(BuildContext context) {
     return Container(
       height: 400,
       width: 400,
@@ -41,9 +29,28 @@ class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
         borderRadius: BorderRadius.circular(25),
       ),
       alignment: Alignment.center,
-      child: Column(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          FileForm(
+          DropzoneView(
+            onCreated: (ctrl) => controller = ctrl,
+            onLoaded: () => print('Zone loaded'),
+            onError: (ev) => print('Error: $ev'),
+            onDrop: (ev) async {},
+          ),
+          buildForm(context),
+        ],
+      ),
+    );
+  }
+
+  Widget buildForm(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(5),
+          child: FileForm(
             file: image,
             labelWith: 'Изображение: ${image?.filename}',
             labelWithout: 'Изображение не выбрано',
@@ -51,7 +58,10 @@ class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
             onPicked: () =>
                 pickImage().then((value) => setState(() => image = value)),
           ),
-          FileForm(
+        ),
+        Padding(
+          padding: EdgeInsets.all(5),
+          child: FileForm(
             file: mask,
             labelWith: 'Маска: ${mask?.filename}',
             labelWithout: 'Маска не выбрана',
@@ -59,21 +69,21 @@ class _WatermarkLoaderFormState extends State<WatermarkLoaderForm> {
             onPicked: () =>
                 pickImage().then((value) => setState(() => mask = value)),
           ),
-          ElevatedButton.icon(
-            onPressed: image != null && mask != null
-                ? () {
-                    setState(() {
-                      image = null;
-                      mask = null;
-                    });
-                    widget.onSubmit(image!, mask!);
-                  }
-                : null,
-            icon: Icon(Icons.file_upload),
-            label: Text('Отправить на обработку'),
-          )
-        ],
-      ),
+        ),
+        ElevatedButton.icon(
+          onPressed: image != null && mask != null
+              ? () {
+                  widget.onSubmit(image!, mask!);
+                  setState(() {
+                    image = null;
+                    mask = null;
+                  });
+                }
+              : null,
+          icon: Icon(Icons.file_upload),
+          label: Text('Отправить на обработку'),
+        )
+      ],
     );
   }
 
@@ -100,6 +110,7 @@ class FileForm extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: (file == null)
           ? [
               Text(labelWithout),
@@ -109,7 +120,7 @@ class FileForm extends StatelessWidget {
               ),
             ]
           : [
-              Text(labelWithout),
+              Text(labelWith),
               IconButton(
                 icon: Icon(Icons.clear),
                 onPressed: onClear,
