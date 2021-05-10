@@ -1,9 +1,8 @@
 import asyncio
-from utils.common_utils import np_to_pil
 import aiohttp
 from config import api_url
 import io
-from utils.common_utils import get_image
+from utils.common_utils import get_image, np_to_pil, pil_to_np, crop_image
 from PIL import Image
 import numpy as np
 import inpainting
@@ -27,6 +26,8 @@ async def get_task_data(file_id, session: aiohttp.ClientSession):
     img_bytes, mask_bytes = await asyncio.gather(resp_img, resp_mask)
     img_pil, img_np = get_image(io.BytesIO(img_bytes))
     mask_pil, mask_np = get_image(io.BytesIO(mask_bytes))
+    img_np = pil_to_np(crop_image(img_pil, 64))
+    mask_np = pil_to_np(crop_image(mask_pil, 64))
     return {'image': img_np, 'mask': mask_np, 'image_format': img_pil.format}
 
 def to_bytes(image_np, format):
