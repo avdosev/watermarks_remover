@@ -5,6 +5,7 @@ import os
 from environs import Env
 from settings import Settings
 import tables
+from sqlalchemy import and_
 
 import uuid
 import aiofiles
@@ -42,7 +43,7 @@ async def create_user(request):
 @app.route('/api/user', methods=['GET'])
 async def access_user(request):
     print(request.args)
-    query = tables.users.select(tables.users.c.id).where(tables.users.c.email == request.args['email'][0] and tables.users.c.password == request.args['password'][0])
+    query = tables.users.select(tables.users.c.id).where(and_(tables.users.c.email == request.args['email'][0], tables.users.c.password == request.args['password'][0]))
     print(query)
     res = await app.db.fetch_all(query)
     print(res)
@@ -82,18 +83,20 @@ async def add_image(request, user_id):
 
 @app.route('/api/image/<user_id>/<file_id>', methods=['DELETE'])
 async def remove_image(request, user_id, file_id):
-    query = tables.images.delete().where(tables.images.c.id == file_id and tables.images.c.user_id == user_id)
+    query = tables.images.delete().where(and_(tables.images.c.id == file_id, tables.images.c.user_id == user_id))
     await app.db.execute(query)
     return response.empty(status=202)
 
 @app.route('/api/image/<user_id>/<file_id>', methods=['GET'])
 async def get_image(request, user_id, file_id):
-    query = tables.images.select().where(tables.images.c.user_id == user_id and tables.images.c.id == file_id)
+    query = tables.images.select().where(and_(tables.images.c.user_id == user_id, tables.images.c.id == file_id))
+    print(query)
     res = await app.db.fetch_all(query)
     if len(res) == 0:
         return response.empty(status=204)
     
     res = res[0]
+    print(res)
     st = res.result_state
     if st is not None and st == 'READY':
         return await response.file(res.result_path, filename=res.image_name)

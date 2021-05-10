@@ -1,4 +1,5 @@
 import asyncio
+from utils.common_utils import np_to_pil
 import aiohttp
 from config import api_url
 import io
@@ -29,7 +30,7 @@ async def get_task_data(file_id, session: aiohttp.ClientSession):
     return {'image': img_np, 'mask': mask_np, 'image_format': img_pil.format}
 
 def to_bytes(image_np, format):
-    img = Image.fromarray(image_np)
+    img = np_to_pil(image_np)
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format=format)
     return img_byte_arr.getvalue()
@@ -60,8 +61,6 @@ async def main(loop):
         # do task
         print('Do task')
         res = inpainting.remove_watermark(data['image'], data['mask'])
-        res = (res * 255).astype(np.uint8)
-        res = np.reshape(res, (res.shape[1], res.shape[2], res.shape[0]))
         print('Output shape: ', res.shape)
         res_bytes = to_bytes(res, format=data['image_format'])
         
