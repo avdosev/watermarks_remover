@@ -4,3 +4,6 @@ sanic_openapi
 sqlalchemy
 sqlalchemy_utils
 aiofiles
+aiosqlite
+environs
+databases
